@@ -1,11 +1,17 @@
 import { neo4jgraphql } from "neo4j-graphql-js";
 
+// GraphQL SDL (Schema Definition Language)
+// - url: https://graphql.org/learn/schema/
+// - comments: https://stackoverflow.com/questions/39962867/how-do-i-add-a-description-to-a-field-in-graphql-schema-language
+// - !: means non-nullable
 export const typeDefs = `
 type User {
   id: ID!
   name: String
+  # relations
   friends(first: Int = 10, offset: Int = 0): [User] @relation(name: "FRIENDS", direction: "BOTH")
   reviews(first: Int = 10, offset: Int = 0): [Review] @relation(name: "WROTE", direction: "OUT")
+  # calculated
   avgStars: Float @cypher(statement: "MATCH (this)-[:WROTE]->(r:Review) RETURN toFloat(avg(r.stars))")
   numReviews: Int @cypher(statement: "MATCH (this)-[:WROTE]->(r:Review) RETURN COUNT(r)")
 }
@@ -33,6 +39,7 @@ type Category {
   businesses(first: Int = 10, offset: Int = 0): [Business] @relation(name: "IN_CATEGORY", direction: "IN")
 }
 
+# Should be able to auto-generate some basic queries, I would imagine, similar to the resolvers and mutations.
 type Query {
     users(id: ID, name: String, first: Int = 10, offset: Int = 0): [User]
     businesses(id: ID, name: String, first: Int = 10, offset: Int = 0): [Business]
